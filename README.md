@@ -47,9 +47,9 @@ See more examples [here](/examples/).
 
 ## Credits
 
-- @the-moebius: [original repository](https://github.com/the-moebius/fluent)
+- [@slavafomin](https://github.com/slavafomin) - [original repository](https://github.com/the-moebius/fluent)
   (Node.js)
-- @eoj1512: [deno port](https://github.com/roj1512/fluent) of
+- [@roj1512](https://github.com/roj1512) - [deno port](https://github.com/roj1512/fluent) of
   [@fluent/bundle](https://github.com/projectfluent/fluent.js/tree/master/fluent-bundle)
   and
   [@fluent/langneg](https://github.com/projectfluent/fluent.js/tree/master/fluent-langneg)
