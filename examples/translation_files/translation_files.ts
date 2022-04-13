@@ -1,6 +1,6 @@
 import { Fluent, TranslationContext } from "../../src/mod.ts";
 
-const TRANSLATIONS_PATH = `${Deno.cwd()}/examples/translation-files`;
+const TRANSLATIONS_PATH = `${Deno.cwd()}/examples/translation_files`;
 
 void (async () => {
   // Instantiate a Fluent class
