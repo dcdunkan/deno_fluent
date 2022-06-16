@@ -43,14 +43,14 @@ export class Fluent {
       new LoggingWarningHandler();
   }
 
-  public async addTranslation(
+  public addTranslation(
     options: AddTranslationOptions,
-  ): Promise<void> {
+  ): void {
     const locales = Array.isArray(options.locales)
       ? options.locales
       : [options.locales];
 
-    const sources = await this.handleSources({
+    const sources = this.handleSources({
       source: options.source,
       filePath: options.filePath,
     });
@@ -146,10 +146,10 @@ export class Fluent {
     return this.translate.bind(this, localeOrLocales);
   }
 
-  private async handleSources(options: {
+  private handleSources(options: {
     source?: string | string[];
     filePath?: string | string[];
-  }): Promise<string[]> {
+  }): string[] {
     if (options.filePath && options.source) {
       throw new Error(
         `You should specify either "filePath" or "source" ` +
@@ -171,7 +171,7 @@ export class Fluent {
       const sources: string[] = [];
 
       for (const filePath of filePaths) {
-        sources.push(await Deno.readTextFile(filePath));
+        sources.push(Deno.readTextFileSync(filePath));
       }
 
       return sources;
