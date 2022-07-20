@@ -1,19 +1,16 @@
-import type { FluentVariable, Pattern } from "./deps.ts";
-import { FluentBundle, FluentResource } from "./deps.ts";
-import { negotiateLanguages } from "./deps.ts";
-
+import {
+  FluentBundle,
+  FluentResource,
+  type FluentVariable,
+  negotiateLanguages,
+  type Pattern,
+} from "./deps.ts";
 import { LoggingWarningHandler } from "./warnings/logging_warning_handler.ts";
 import { WarningHandler } from "./warnings/warnings.ts";
 
-export interface FluentOptions {
-  warningHandler?: WarningHandler;
-}
-
 export type LocaleId = string;
-
-export type FluentBundleOptions = (
-  ConstructorParameters<typeof FluentBundle>[1]
-);
+export type TranslationContext = Record<string, FluentVariable>;
+export type FluentBundleOptions = ConstructorParameters<typeof FluentBundle>[1];
 
 export interface AddTranslationOptions {
   locales: LocaleId | LocaleId[];
@@ -22,14 +19,12 @@ export interface AddTranslationOptions {
   bundleOptions?: FluentBundleOptions;
   isDefault?: boolean;
 }
-
 export interface GetTranslatorOptions {
   locales: LocaleId | LocaleId[];
 }
-
-export type TranslationContext = (
-  Record<string, FluentVariable>
-);
+export interface FluentOptions {
+  warningHandler?: WarningHandler;
+}
 
 export class Fluent {
   private readonly bundles = (
@@ -43,14 +38,40 @@ export class Fluent {
       new LoggingWarningHandler();
   }
 
-  public addTranslation(
+  public async addTranslation(
+    options: AddTranslationOptions,
+  ): Promise<void> {
+    const locales = Array.isArray(options.locales)
+      ? options.locales
+      : [options.locales];
+
+    const sources = await this.handleSources({
+      source: options.source,
+      filePath: options.filePath,
+    });
+
+    const bundle = this.createBundle({
+      locales,
+      sources,
+      bundleOptions: options.bundleOptions,
+    });
+
+    this.bundles.add(bundle);
+
+    // Saving reference to the default bundle
+    if (!this.defaultBundle || options.isDefault) {
+      this.defaultBundle = bundle;
+    }
+  }
+
+  public addTranslationSync(
     options: AddTranslationOptions,
   ): void {
     const locales = Array.isArray(options.locales)
       ? options.locales
       : [options.locales];
 
-    const sources = this.handleSources({
+    const sources = this.handleSourcesSync({
       source: options.source,
       filePath: options.filePath,
     });
@@ -146,7 +167,43 @@ export class Fluent {
     return this.translate.bind(this, localeOrLocales);
   }
 
-  private handleSources(options: {
+  private async handleSources(options: {
+    source?: string | string[];
+    filePath?: string | string[];
+  }): Promise<string[]> {
+    if (options.filePath && options.source) {
+      throw new Error(
+        `You should specify either "filePath" or "source" ` +
+          `option, not both`,
+      );
+    }
+
+    if (options.source || options.source === "") {
+      return (
+        Array.isArray(options.source)
+          ? options.source.map(($source) => String($source))
+          : [String(options.source)]
+      );
+    } else if (options.filePath) {
+      const filePaths = Array.isArray(options.filePath)
+        ? options.filePath
+        : [options.filePath];
+
+      const sources: string[] = [];
+
+      for (const filePath of filePaths) {
+        sources.push(await Deno.readTextFile(filePath));
+      }
+
+      return sources;
+    } else {
+      throw new Error(
+        `You should specify "filePath" or "source" option`,
+      );
+    }
+  }
+
+  private handleSourcesSync(options: {
     source?: string | string[];
     filePath?: string | string[];
   }): string[] {
