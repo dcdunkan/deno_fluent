@@ -34,7 +34,7 @@ welcome =
   }`,
 });
 
-const output = fluent.translate("ru", "welcome", {
+const output = fluent.translate("en", "welcome", {
   name: "Slava",
   value: 100.12345,
   applesCount: 5,
